@@ -468,7 +468,20 @@ check('compact: a long refusal is cut', reasonOf('x'.repeat(500)).length === 160
 
 // The watcher: who reads, what it reads, what counts as a note, when it reads
 {
-  const { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS } = new Function(cut('watch') + '\nreturn { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS }')()
+  const { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS, watchReply, watchSkips, sameNote, watchLists } = new Function(cut('watch') + '\nreturn { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS, watchReply, watchSkips, sameNote, watchLists }')()
+  const full = watchReply('NOTE: The tests failed but Claude said they pass.\nTAG: Heads up\nEXPLAIN: **Tests did not pass**\nThree tests failed.\nRun them again.')
+  is('watch: a reply gives its note', full.note, 'The tests failed but Claude said they pass.')
+  is('watch: a reply gives its tag', full.tag, 'Heads up')
+  is('watch: a reply keeps its explanation in lines', full.explain, '**Tests did not pass**\nThree tests failed.\nRun them again.')
+  is('watch: the other tag is read', watchReply('NOTE: Caching costs more for one-off questions.\nTAG: You should know\nEXPLAIN: x').tag, 'You should know')
+  is('watch: NOTE: NONE is no note', JSON.stringify(watchReply('NOTE: NONE')), '{"note":"","tag":"Heads up","explain":""}')
+  is('watch: a reply without labels is still a note', watchReply('Claude skipped the lint step.').note, 'Claude skipped the lint step.')
+  is('watch: bold labels are read', watchReply('**NOTE:** A thing.\n**TAG:** Heads up').note, 'A thing.')
+  is('watch: two notes typed past cost nothing', watchSkips(2), 0)
+  is('watch: the third sits out one reading', watchSkips(3), 1)
+  is('watch: the skipping stops growing', watchSkips(20), 16)
+  check('watch: the same note in other punctuation is the same', sameNote('Claude did not rerun the tests.', 'claude did not re-run the tests') && !sameNote('a', 'b'), 0)
+  check('watch: the lists name what to skip', watchLists(['one'], []).includes('- one') && watchLists([], []).includes('(none yet)'), watchLists([], []))
   const who = (m) => JSON.stringify(watcherFor(m))
   is('watch: Fable is read by Opus at medium effort', who('claude-fable-5-1'), '{"model":"opus","effort":"medium"}')
   is('watch: Opus is read by Opus at medium effort', who('claude-opus-5-5'), '{"model":"opus","effort":"medium"}')
