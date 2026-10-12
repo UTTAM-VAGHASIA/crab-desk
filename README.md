@@ -49,6 +49,13 @@ claude plugin install crab-desk@uttam-mods --scope user
 Restart Claude Code, then type `/desk`. In the terminal the pane docks beside the
 transcript in fullscreen (`/tui fullscreen`) from 110 columns.
 
+## Make Claude pick the right helper
+
+The desk shows each helper's model; it does not choose it. Without a rule, a helper
+inherits the session's model, and a trivial task runs on your most expensive one. Copy
+the rules in [docs/helper-rules.md](docs/helper-rules.md) into your `CLAUDE.md` so
+Claude picks Haiku for a lookup and saves Opus for work that needs it.
+
 ## Change it
 
 The app runs a cached copy, so an edit shows only after a release:
