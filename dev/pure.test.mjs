@@ -470,11 +470,11 @@ check('compact: a long refusal is cut', reasonOf('x'.repeat(500)).length === 160
 {
   const { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS } = new Function(cut('watch') + '\nreturn { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS }')()
   const who = (m) => JSON.stringify(watcherFor(m))
-  is('watch: Fable is read by Opus thinking little', who('claude-fable-5-1'), '{"model":"opus","effort":"low"}')
-  is('watch: Opus is read by Opus thinking little', who('claude-opus-5-5'), '{"model":"opus","effort":"low"}')
+  is('watch: Fable is read by Opus at medium effort', who('claude-fable-5-1'), '{"model":"opus","effort":"medium"}')
+  is('watch: Opus is read by Opus at medium effort', who('claude-opus-5-5'), '{"model":"opus","effort":"medium"}')
   is('watch: Sonnet reads itself', who('claude-sonnet-5-5'), '{"model":"sonnet","effort":"medium"}')
   is('watch: Haiku reads itself, with no effort to set', who('claude-haiku-5-5'), '{"model":"haiku","effort":""}')
-  is('watch: a model not yet seen is read by Opus thinking little', who(''), '{"model":"opus","effort":"low"}')
+  is('watch: a model not yet seen is read by Opus at medium effort', who(''), '{"model":"opus","effort":"medium"}')
 
   is('watch: NONE is no note', watchNote('NONE'), '')
   is('watch: none with a full stop is no note', watchNote(' None. '), '')
