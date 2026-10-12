@@ -1,0 +1,5 @@
+{
+  "name": "uttam-mods",
+  "owner": { "name": "Uttam Vaghasia" },
+  "plugins": [{ "name": "clawd-desk", "source": "./" }]
+}
