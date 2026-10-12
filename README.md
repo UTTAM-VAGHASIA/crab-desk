@@ -49,6 +49,36 @@ claude plugin install crab-desk@uttam-mods --scope user
 Restart Claude Code, then type `/desk`. In the terminal the pane docks beside the
 transcript in fullscreen (`/tui fullscreen`) from 110 columns.
 
+### On Windows
+
+The commands above work as written in Git Bash. In PowerShell, write the folder as
+`$HOME\.claude\mods\crab-desk` instead of `~/.claude/mods/crab-desk`:
+
+```powershell
+git clone https://github.com/UTTAM-VAGHASIA/crab-desk $HOME\.claude\mods\crab-desk
+claude plugin marketplace add $HOME\.claude\mods\crab-desk
+claude plugin install crab-desk@uttam-mods --scope user
+```
+
+## Update
+
+```bash
+git -C ~/.claude/mods/crab-desk pull
+claude plugin marketplace update uttam-mods
+claude plugin update crab-desk@uttam-mods
+```
+
+Restart Claude Code afterwards: a running session keeps the old version.
+
+## Uninstall
+
+```bash
+claude plugin uninstall crab-desk@uttam-mods
+claude plugin marketplace remove uttam-mods
+```
+
+Then delete the `~/.claude/mods/crab-desk` folder.
+
 ## Make Claude pick the right helper
 
 The desk shows each helper's model; it does not choose it. Without a rule, a helper
