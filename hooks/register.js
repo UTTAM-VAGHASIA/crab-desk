@@ -188,10 +188,35 @@ function compactEvent($, event) {
 // Asks the engine to compact with the note on record, then hands Clawd his
 // own words on what to continue. A refusal, or a hook's skip, is shown in
 // its own words, and the readiness stands: the note is still good.
+// >>> compactWay
+// Whether a refusal to compact says the session has no compaction between
+// turns for a plugin, as the Desktop app's has none: there it is the /compact
+// command, run as the owner would type it
+const needsCommand = (reason) => /headless|-p \/ SDK/i.test(String(reason ?? ''))
+// <<< compactWay
+
+// Compacts by the /compact command, with `instructions` after it; where a
+// plugin may not run a command either, by the same words as a prompt
+async function compactAsCommand($, instructions) {
+  try {
+    await $.command.run(/** @type {any} */ ({ command: 'compact', args: instructions }))
+  } catch {
+    await $.prompt.submit({ text: '/compact' + (instructions ? ' ' + instructions : '') })
+  }
+}
+
 async function compactRun($) {
   compactForce = false
+  const instructions = resume ? 'Keep what is needed to resume: ' + resume : ''
   try {
-    const done = await $.session.compact(resume ? { instructions: 'Keep what is needed to resume: ' + resume } : {})
+    /** @type {any} */
+    let done = null
+    try {
+      done = await $.session.compact(instructions ? { instructions } : {})
+    } catch (err) {
+      if (!needsCommand(reasonOf(err))) throw err
+      await compactAsCommand($, instructions)
+    }
     if (done && typeof done.skip === 'string') {
       // Nothing was compacted, so Clawd is not told it was
       compactEvent($, 'failed')

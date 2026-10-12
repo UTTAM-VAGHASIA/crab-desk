@@ -458,6 +458,14 @@ check('compact: a long refusal is cut', reasonOf('x'.repeat(500)).length === 160
   is('compact: ready, then more work, then a press asks afresh', run([['ready'], ['work'], ['press']]), 'asking')
 }
 
+// Compaction where a plugin may not compact between turns: the refusal is told from the others
+{
+  const { needsCommand } = new Function(cut('compactWay') + '\nreturn { needsCommand }')()
+  check('compact: the Desktop app\'s refusal asks for the command', needsCommand('clawd-desk: $.session.compact: not available in a headless (-p / SDK) session yet: compaction here runs inside a turn (a /compact prompt); catch it and carry on'), 0)
+  check('compact: a refusal while a turn runs does not', !needsCommand('$.session.compact: a turn is running'), 0)
+  check('compact: no reason does not', !needsCommand(undefined), 0)
+}
+
 // The watcher: who reads, what it reads, what counts as a note, when it reads
 {
   const { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS } = new Function(cut('watch') + '\nreturn { watcherFor, watchDigest, watchNote, watchDue, WATCH_GAP_MS }')()
