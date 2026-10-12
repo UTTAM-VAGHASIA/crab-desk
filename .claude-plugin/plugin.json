@@ -1,6 +1,6 @@
 {
   "name": "crab-desk",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "A desk for Claude Code: the crab and what he is saying, his plan, the team of subagents, files and edits, project progress, usage, a watcher's notes, a hold on risky commands, and a Compact button",
   "author": { "name": "Uttam Vaghasia" },
   "license": "MIT"

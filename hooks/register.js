@@ -2837,8 +2837,8 @@ function noteBlock(w, n, at) {
   const told = n.isOpen ? (n.isWriting ? ['Writing the explanation…'] : String(n.explain).split('\n').map((l) => l.trim()).filter(Boolean)) : []
   const explained = told.flatMap((l, i) => {
     const isTitle = i === 0 && /^\*\*.+\*\*$/.test(l)
-    return wrapText(l.replace(/\*\*/g, '').replace(/^[-*•]\s+/, '· '), 11.5, w - PAD * 2 - 14, 8).map((text) => ({ text, isTitle }))
-  }).slice(0, 22)
+    return wrapText(l.replace(/\*\*/g, '').replace(/^[-*•]\s+/, '· '), 11.5, w - PAD * 2 - 14, Infinity).map((text) => ({ text, isTitle }))
+  })
   const textH = 14 + lines.length * 17 + 18 + (explained.length ? 4 + explained.length * 16 : 0)
   // The buttons stand a row up from the block's foot: on the last row a chip would run over its edge
   const h = textH + 44
@@ -4007,9 +4007,8 @@ export const register = (on) => {
                   ? (n.isWriting ? ['Writing the explanation…'] : String(n.explain).split('\n').map((l) => l.trim()).filter(Boolean))
                       .flatMap((l, i) => {
                         const isTitle = i === 0 && /^\*\*.+\*\*$/.test(l)
-                        return wrapCells(l.replace(/\*\*/g, '').replace(/^[-*•]\s+/, '· '), cols - 2, 8).map((line) => (isTitle ? Text({ bold: true, children: [line] }) : Text({ dimColor: true, children: [line] })))
+                        return wrapCells(l.replace(/\*\*/g, '').replace(/^[-*•]\s+/, '· '), cols - 2, Infinity).map((line) => (isTitle ? Text({ bold: true, children: [line] }) : Text({ dimColor: true, children: [line] })))
                       })
-                      .slice(0, 24)
                   : []),
                 Box({
                   flexDirection: 'row',
