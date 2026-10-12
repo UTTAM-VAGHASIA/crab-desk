@@ -182,7 +182,40 @@ function compactEvent($, event) {
   }
   if (step.does === 'ask') void askToCompact($)
   if (step.does === 'compact') void compactRun($)
-  if (step.state !== was || step.does) redraw($)
+  if (step.state !== was || step.does) {
+    void keepReady($)
+    redraw($)
+  }
+}
+
+// Readiness outlasts the session's window: a session Clawd made ready, closed
+// and opened again, is still ready, for nothing happened in between. So it is
+// kept in the plugin's store under the session's id, with Clawd's note, and
+// dropped there as soon as it no longer holds (he worked on, or it compacted).
+let readyKey = ''
+
+async function keepReady($) {
+  if (!readyKey) return
+  try {
+    if (compacting === 'ready' || compacting === 'waiting') await $.store.set(readyKey, { resume })
+    else await $.store.delete(readyKey)
+  } catch {
+    // Not kept: after a restart the owner is asked to have Clawd get ready again
+  }
+}
+
+// At a session's start: the readiness kept for this very session, if any
+async function recallReady($) {
+  try {
+    readyKey = 'ready:' + (await $.session.id())
+    const kept = /** @type {any} */ (await $.store.get(readyKey))
+    if (kept && typeof kept === 'object' && compacting === 'idle') {
+      resume = String(kept.resume ?? '')
+      compacting = 'ready'
+    }
+  } catch {
+    // Nothing recalled
+  }
 }
 
 // Asks the engine to compact with the note on record, then hands Clawd his
@@ -197,41 +230,71 @@ const needsCommand = (reason) => /headless|-p \/ SDK/i.test(String(reason ?? '')
 
 // Compacts by the /compact command, with `instructions` after it; where a
 // plugin may not run a command either, by the same words as a prompt
-async function compactAsCommand($, instructions) {
+// `mark` puts each step and what it answered on the run's record.
+async function compactAsCommand($, instructions, mark) {
+  const brief = (v) => clip(JSON.stringify(v ?? null) ?? 'undefined', 300)
   try {
-    await $.command.run(/** @type {any} */ ({ command: 'compact', args: instructions }))
-  } catch {
-    await $.prompt.submit({ text: '/compact' + (instructions ? ' ' + instructions : '') })
+    const ran = await $.command.run(/** @type {any} */ ({ command: 'compact', args: instructions }))
+    mark('command.run answered ' + brief(ran))
+  } catch (err) {
+    mark('command.run refused: ' + reasonOf(err))
+    const sent = await $.prompt.submit({ text: '/compact' + (instructions ? ' ' + instructions : '') })
+    mark('prompt.submit /compact answered ' + brief(sent))
   }
 }
+
+// A context this much smaller than before was compacted
+const COMPACTED_BELOW = 0.8
 
 async function compactRun($) {
   compactForce = false
   const instructions = resume ? 'Keep what is needed to resume: ' + resume : ''
+  // What each step of this run answered, kept in the plugin's store under
+  // 'compact-trace': where the app has its own way to compact, this is how a
+  // run that did nothing can be told from one that worked
+  /** @type {string[]} */
+  const steps = []
+  const mark = (said) => steps.push(said)
+  const before = usage?.context.tokens ?? 0
   try {
     /** @type {any} */
     let done = null
+    let isByCommand = false
     try {
       done = await $.session.compact(instructions ? { instructions } : {})
+      mark('session.compact answered ' + clip(JSON.stringify(done ?? null) ?? 'undefined', 300))
     } catch (err) {
+      mark('session.compact refused: ' + reasonOf(err))
       if (!needsCommand(reasonOf(err))) throw err
-      await compactAsCommand($, instructions)
+      isByCommand = true
+      await compactAsCommand($, instructions, mark)
     }
+    await refresh($)
+    const after = usage?.context.tokens ?? 0
+    mark('context ' + before + ' -> ' + after)
     if (done && typeof done.skip === 'string') {
       // Nothing was compacted, so Clawd is not told it was
       compactEvent($, 'failed')
       compactNote = 'Compaction was skipped: ' + reasonOf(done.skip)
+    } else if (isByCommand && before > 0 && after > before * COMPACTED_BELOW) {
+      // The app took the command and the context is as large as it was
+      compactEvent($, 'failed')
+      compactNote = 'The app took /compact from the desk but the context did not shrink. Type /compact yourself.'
     } else {
       const note = resume
       compactEvent($, 'done')
       resume = ''
-      await $.prompt.submit({ text: 'Compaction is done. Continue from where you stopped' + (note ? ': ' + note : '.') })
+      const sent = await $.prompt.submit({ text: 'Compaction is done. Continue from where you stopped' + (note ? ': ' + note : '.') })
+      mark('resume prompt answered ' + clip(JSON.stringify(sent ?? null) ?? 'undefined', 200))
     }
   } catch (err) {
+    mark('failed: ' + reasonOf(err))
     compactEvent($, 'failed')
     compactNote = 'Could not compact: ' + reasonOf(err)
   }
-  await refresh($)
+  mark('ended ' + compacting + (compactNote ? ' · ' + compactNote : ''))
+  await $.store.set('compact-trace', { at: await $.clock.now(), steps }).catch(() => {})
+  await refresh($).catch(() => {})
   $.ui.invalidate('ui.render')
 }
 
@@ -2996,6 +3059,8 @@ export const register = (on) => {
       },
     })
     newQuote()
+    // Not awaited either; the band is drawn again once it is known
+    void recallReady($).then(() => redraw($))
     // Not awaited: a desk that cannot open must not hold the session's start
     void openDesk($)
     // Two steps a second. In the terminal each is a drawing while anyone is
