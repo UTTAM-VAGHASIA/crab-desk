@@ -1,4 +1,4 @@
-// clawd-desk: a desk for Claude Code. Clawd and what he is doing, his team of
+// crab-desk: a desk for Claude Code. Clawd and what he is doing, his team of
 // subagents, and usage, in a pane; a Compact button above the prompt.
 //
 // The pixel Clawd (body, legs, the walk), the helpers' costumes, the tiles, the
@@ -11,7 +11,7 @@
 // follow the filetree mod (MIT). None of their code runs a shell here: the
 // hold measures with the file system and read-only git, so it works on Windows.
 
-const PANE = 'clawd-desk'
+const PANE = 'crab-desk'
 
 // Context size, in tokens, from which the Compact button shows by itself
 const COMPACT_AT = 400000
@@ -28,9 +28,9 @@ const DEFAULT_COLOR = 0x01000000
 // The last usage figures read from the session, or null before the first read
 let usage = null
 // The tool Clawd calls when the session is at a safe point to compact
-const READY_TOOL = 'mcp__clawd-desk__ready_to_compact'
+const READY_TOOL = 'mcp__crab-desk__ready_to_compact'
 // The tool a helper calls to say how far along its own task is
-const STEP_TOOL = 'mcp__clawd-desk__step'
+const STEP_TOOL = 'mcp__crab-desk__step'
 
 // Where a compaction stands: one of the five states of compactStep, which
 // says what each of them is and what moves it to the next
@@ -1361,7 +1361,7 @@ async function pause($) {
 async function holdCall($, hold, signal) {
   holds = [...holds, hold]
   try {
-    void $.ui.toast('Clawd desk held a risky command (' + hold.risk.label + '): answer above the prompt')
+    void $.ui.toast('Crab desk held a risky command (' + hold.risk.label + '): answer above the prompt')
     $.ui.invalidate('ui.render')
     hold.damage = await damageOf($, hold.risk)
     $.ui.invalidate('ui.render')
@@ -1383,7 +1383,7 @@ async function holdCall($, hold, signal) {
       if (await pause($)) continue
       let said = ''
       try {
-        said = await $.ui.ask('Clawd desk held a risky command from ' + hold.who + ': ' + oneLine(hold.command, 160) + ' (' + hold.damage + '). Run it?', ['Cancel', 'Proceed'])
+        said = await $.ui.ask('Crab desk held a risky command from ' + hold.who + ': ' + oneLine(hold.command, 160) + ' (' + hold.damage + '). Run it?', ['Cancel', 'Proceed'])
       } catch {
         // Dismissed: no is the answer
       }
@@ -1401,7 +1401,7 @@ async function holdCall($, hold, signal) {
 
 // What the model is told when a held command did not run
 const denial = (hold, decision) =>
-  'Clawd desk held this command (' +
+  'Crab desk held this command (' +
   hold.risk.label +
   ') and it did NOT run: ' +
   ({
@@ -1671,7 +1671,7 @@ async function openDesk($) {
     ['project', () => loadProject($)],
     // Beside the transcript it asks for 44 columns; above the prompt, for the
     // rows the whole sheet needs
-    ['pane', () => $.ui.open({ id: PANE, title: 'Clawd desk', columns: 44, rows: 30 })],
+    ['pane', () => $.ui.open({ id: PANE, title: 'Crab desk', columns: 44, rows: 30 })],
   ]
   trouble = ''
   for (const [step, run] of steps) {
@@ -1681,7 +1681,7 @@ async function openDesk($) {
     } catch (err) {
       trouble = step + ': ' + (err instanceof Error ? err.message : String(err))
     }
-    if (trouble) void $.ui.toast('Clawd desk: ' + trouble)
+    if (trouble) void $.ui.toast('Crab desk: ' + trouble)
   }
   $.ui.invalidate('ui.render')
 }
@@ -3253,7 +3253,7 @@ function deskSheet(w, at) {
 /** @type {import('claude-code').Register} */
 export const register = (on) => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'desk', description: 'Open the Clawd desk pane', immediate: true })
+    await $.command.register({ name: 'desk', description: 'Open the Crab desk pane', immediate: true })
     await $.tool.register({
       name: 'ready_to_compact',
       description:
@@ -3272,7 +3272,7 @@ export const register = (on) => {
     await $.tool.register({
       name: 'step',
       description:
-        'For subagents: report progress on your own task to the Clawd desk, where the owner watches. Right after reading ' +
+        'For subagents: report progress on your own task to the Crab desk, where the owner watches. Right after reading ' +
         'your brief, call it with `total` (your plan in 3 to 8 steps) and `done: 0`; call it again as each step finishes, ' +
         'with a `note` naming the step in hand. Cheap and silent: it only draws a bar.',
       inputSchema: {
@@ -4096,7 +4096,7 @@ export const register = (on) => {
     } catch (err) {
       const { Box, Text } = $.ui.resolve(e)
       const why = err instanceof Error ? err.message : String(err)
-      return Box({ flexDirection: 'column', children: [Text({ children: ['Clawd desk could not draw (' + e.surface + '):'] }), Text({ children: [why] })] })
+      return Box({ flexDirection: 'column', children: [Text({ children: ['Crab desk could not draw (' + e.surface + '):'] }), Text({ children: [why] })] })
     }
   })
 

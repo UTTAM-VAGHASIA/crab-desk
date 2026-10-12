@@ -122,7 +122,7 @@ project.tickets = [
 const before = ['import "dart:io";', '', 'class Verify {', '  final String root;', '  Verify(this.root);', '', '  Future<int> run() async {', '    final checks = <Check>[];', '    return checks.length;', '  }', '}'].join('\n')
 const after = before.replace('    final checks = <Check>[];', '    final checks = <Check>[PathsExist(root), AnalyzerClean(root)];\n    for (final check in checks) {\n      await check.run();\n    }')
 const longNew = Array.from({ length: 30 }, (_, i) => (i === 0 ? '# Notes for slice 1d.2' : i === 1 ? '' : '- finding ' + i + ' about the verify checks, written out at some length so the line is long')).join('\n')
-const root = 'C:/Users/uttam/PycharmProjects/appstein/'
+const root = 'C:/work/appstein/'
 const turnNow = {
   edits: [
     { file: root + 'packages/appstein/lib/src/verify/verify_core.dart', who: 'Clawd', at: at - 95e3, ...desk.lineDiff(before, after) },
@@ -216,7 +216,7 @@ const column = (state, scheme) => {
   return `<section class="${scheme}"><h2>${state.name}</h2>${parts.join('\n')}${(state.bands ?? []).map(bandRow).join('')}</section>`
 }
 
-const page = (body) => `<!doctype html><meta charset="utf-8"><title>clawd-desk preview</title>
+const page = (body) => `<!doctype html><meta charset="utf-8"><title>crab-desk preview</title>
 <style>body{margin:0;display:flex;flex-wrap:wrap;align-items:flex-start;gap:0;font:12px -apple-system,'Segoe UI',sans-serif;background:#555}
 section{width:${W}px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;min-height:100vh}
 .dark{background:#1f1e1d;color:#a8a8a4}.light{background:#fff;color:#6b6b68}
@@ -274,7 +274,7 @@ if (!suffix && W === 400) {
   const frames = JSON.stringify(Object.fromEntries(['dark', 'light'].flatMap((scheme) => rows.map(([, list], r) => [scheme + r, list.map((part) => uri(part, scheme))]))))
   writeFileSync(
     join(here, 'bars.html'),
-    `<!doctype html><meta charset="utf-8"><title>clawd-desk bars</title>
+    `<!doctype html><meta charset="utf-8"><title>crab-desk bars</title>
 <style>body{margin:0;display:flex;flex-wrap:wrap;align-items:flex-start;font:12px -apple-system,'Segoe UI',sans-serif;background:#555}
 section{width:${W}px;padding:16px;min-height:100vh}.dark{background:#1f1e1d;color:#a8a8a4}.light{background:#fff;color:#6b6b68}
 h2{font-size:11px;font-weight:400;margin:18px 0 4px;opacity:.8}img{display:block}</style>

@@ -1,4 +1,4 @@
 {
-  "description": "The clawd-desk hooks module",
+  "description": "The crab-desk hooks module",
   "modules": ["./register.js"]
 }
